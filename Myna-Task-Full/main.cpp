@@ -126,21 +126,27 @@ typedef LONG (NTAPI *NtResumeProcess_t)(HANDLE);
 //  THEME
 // ============================================================================
 namespace Theme {
-    constexpr COLORREF BgWindow     = RGB(0x1B, 0x1B, 0x1F);
-    constexpr COLORREF BgPanel      = RGB(0x23, 0x23, 0x28);
-    constexpr COLORREF BgControl    = RGB(0x29, 0x29, 0x2F);
-    constexpr COLORREF BgListRow    = RGB(0x1E, 0x1E, 0x23);
-    constexpr COLORREF BgListRowAlt = RGB(0x24, 0x24, 0x2A);
-    constexpr COLORREF BgListSel    = RGB(0x1F, 0x46, 0x3A);
-    constexpr COLORREF Border       = RGB(0x35, 0x35, 0x3C);
-    constexpr COLORREF TextPrimary  = RGB(0xEC, 0xEC, 0xEE);
-    constexpr COLORREF TextMuted    = RGB(0x8B, 0x8B, 0x95);
-    constexpr COLORREF Accent       = RGB(0x2E, 0xC9, 0x8E);
-    constexpr COLORREF AccentDim    = RGB(0x1F, 0x8F, 0x66);
-    constexpr COLORREF Amber        = RGB(0xE3, 0xA8, 0x4C);
-    constexpr COLORREF Cyan         = RGB(0x4F, 0xC3, 0xF7);
-    constexpr COLORREF Red          = RGB(0xE5, 0x5B, 0x5B);
-    constexpr COLORREF Violet       = RGB(0xB1, 0x8C, 0xF2);
+    constexpr COLORREF BgWindow     = RGB(0xF3, 0xF3, 0xF3);
+    constexpr COLORREF BgPanel      = RGB(0xFF, 0xFF, 0xFF);
+    constexpr COLORREF BgControl    = RGB(0xFB, 0xFB, 0xFB);
+    constexpr COLORREF BgListRow    = RGB(0xFF, 0xFF, 0xFF);
+    constexpr COLORREF BgListRowAlt = RGB(0xF6, 0xF6, 0xF7);
+    constexpr COLORREF BgListSel    = RGB(0xCC, 0xE4, 0xFA);
+    constexpr COLORREF Border       = RGB(0xD8, 0xD8, 0xDC);
+    constexpr COLORREF TextPrimary  = RGB(0x1A, 0x1A, 0x1A);
+    constexpr COLORREF TextMuted    = RGB(0x6E, 0x6E, 0x6E);
+    constexpr COLORREF Accent       = RGB(0x00, 0x67, 0xC0);
+    constexpr COLORREF AccentDim    = RGB(0x00, 0x4F, 0x98);
+    constexpr COLORREF Amber        = RGB(0xC1, 0x9C, 0x00);
+    constexpr COLORREF AmberDim     = RGB(0x9C, 0x7D, 0x00);
+    constexpr COLORREF Cyan         = RGB(0x00, 0x7A, 0x6D);
+    constexpr COLORREF CyanDim      = RGB(0x00, 0x5F, 0x55);
+    constexpr COLORREF Red          = RGB(0xC4, 0x2B, 0x1C);
+    constexpr COLORREF RedDim       = RGB(0x9A, 0x22, 0x16);
+    constexpr COLORREF Violet       = RGB(0x74, 0x4D, 0xA9);
+    constexpr COLORREF Success      = RGB(0x10, 0x7C, 0x41);
+    constexpr COLORREF ButtonFace   = RGB(0xF3, 0xF3, 0xF3);
+    constexpr COLORREF ButtonFacePressed = RGB(0xE4, 0xE4, 0xE4);
 }
 
 // ============================================================================
@@ -210,7 +216,7 @@ struct AppState {
 
     std::vector<ProcessEntry> allProcesses;
     std::wstring filterLower;
-    COLORREF logColor = Theme::Accent;
+    COLORREF logColor = Theme::TextPrimary;
 
     std::vector<ServiceEntry> allServices;
     std::vector<StartupEntry> allStartupItems;
@@ -248,7 +254,7 @@ inline int SC(int v) { return static_cast<int>(v * g_app.scale + (v >= 0 ? 0.5 :
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 void EnableHighDpiAwareness();
-void ApplyDarkTitleBar(HWND hwnd);
+void ApplyLightTitleBar(HWND hwnd);
 void ApplyRoundedCorners(HWND hwnd);
 void TryEnableMica(HWND hwnd);
 
@@ -461,7 +467,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     case WM_CREATE: {
         g_app.hwnd = hwnd;
         InitGdiResources();
-        ApplyDarkTitleBar(hwnd);
+        ApplyLightTitleBar(hwnd);
         ApplyRoundedCorners(hwnd);
         TryEnableMica(hwnd);
 
@@ -478,7 +484,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         InitTrayIcon();
 
         if (!g_app.isElevated) {
-            SetLog(L"[!] Running without administrator rights. Some actions may be limited.", Theme::Amber);
+            SetLog(L"Running without administrator rights. Some actions may be limited.", Theme::Amber);
         }
 
         g_app.logFile.open("myna_task_log.txt", std::ios::app);
@@ -535,19 +541,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         SetBkMode(hdc, TRANSPARENT);
         HFONT oldFont = static_cast<HFONT>(SelectObject(hdc, g_app.fontTitle));
-        SetTextColor(hdc, Theme::Accent);
+        SetTextColor(hdc, Theme::TextPrimary);
         RECT titleRect{ margin, margin, rc.right - margin, margin + SC(30) };
-        DrawTextW(hdc, L"MYNA TASK FULL", -1, &titleRect, DT_LEFT | DT_TOP | DT_SINGLELINE);
+        DrawTextW(hdc, L"Myna Task Full", -1, &titleRect, DT_LEFT | DT_TOP | DT_SINGLELINE);
 
         SelectObject(hdc, g_app.fontSubtitle);
         SetTextColor(hdc, Theme::TextMuted);
         RECT subRect{ margin, margin + SC(30), rc.right - margin, margin + headerH };
-        DrawTextW(hdc, L"NATIVE PROCESS MANAGER  \u2022  C++ / WIN32  \u2022  WINDOWS 10 & 11",
+        DrawTextW(hdc, L"Process & System Manager for Windows 10 and 11",
             -1, &subRect, DT_LEFT | DT_TOP | DT_SINGLELINE);
         SelectObject(hdc, oldFont);
 
         HBRUSH accentBrush = CreateSolidBrush(Theme::Accent);
-        RECT underline{ margin, margin + SC(35), margin + SC(140), margin + SC(38) };
+        RECT underline{ margin, margin + SC(35), margin + SC(56), margin + SC(38) };
         FillRect(hdc, &underline, accentBrush);
         DeleteObject(accentBrush);
 
@@ -727,15 +733,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         }
         else if (id == IDC_BTN_SYNC) {
             RefreshProcessData();
-            SetLog(L"[>] Sync completed.", Theme::Accent);
+            SetLog(L"Sync completed.", Theme::Accent);
         }
         else if (id == IDC_BTN_SUSPEND) {
             DWORD pid = GetSelectedPid();
             if (pid) {
                 wchar_t buf[64];
                 swprintf_s(buf, 64, L"%u", pid);
-                if (DoSuspend(pid)) SetLog(std::wstring(L"[>] Suspended PID ") + buf, Theme::Amber);
-                else SetLog(std::wstring(L"[!] Access denied for PID ") + buf, Theme::Red);
+                if (DoSuspend(pid)) SetLog(std::wstring(L"Suspended PID ") + buf, Theme::Amber);
+                else SetLog(std::wstring(L"Access denied for PID ") + buf, Theme::Red);
             }
         }
         else if (id == IDC_BTN_RESUME) {
@@ -743,8 +749,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             if (pid) {
                 wchar_t buf[64];
                 swprintf_s(buf, 64, L"%u", pid);
-                if (DoResume(pid)) SetLog(std::wstring(L"[>] Resumed PID ") + buf, Theme::Cyan);
-                else SetLog(std::wstring(L"[!] Access denied for PID ") + buf, Theme::Red);
+                if (DoResume(pid)) SetLog(std::wstring(L"Resumed PID ") + buf, Theme::Cyan);
+                else SetLog(std::wstring(L"Access denied for PID ") + buf, Theme::Red);
             }
         }
         else if (id == IDC_BTN_TERMINATE) {
@@ -753,10 +759,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 wchar_t buf[64];
                 swprintf_s(buf, 64, L"%u", pid);
                 if (DoTerminate(pid)) {
-                    SetLog(std::wstring(L"[X] Terminated PID ") + buf, Theme::Red);
+                    SetLog(std::wstring(L"Ended task, PID ") + buf, Theme::Red);
                     RefreshProcessData();
                 } else {
-                    SetLog(std::wstring(L"[!] Failed to terminate protected PID ") + buf, Theme::Red);
+                    SetLog(std::wstring(L"Could not end protected process, PID ") + buf, Theme::Red);
                 }
             }
         }
@@ -765,15 +771,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         }
         else if (id == IDM_CTX_SUSPEND) {
             if (g_app.contextMenuPid && DoSuspend(g_app.contextMenuPid))
-                SetLog(L"[>] Suspended selected process.", Theme::Amber);
+                SetLog(L"Suspended selected process.", Theme::Amber);
         }
         else if (id == IDM_CTX_RESUME) {
             if (g_app.contextMenuPid && DoResume(g_app.contextMenuPid))
-                SetLog(L"[>] Resumed selected process.", Theme::Cyan);
+                SetLog(L"Resumed selected process.", Theme::Cyan);
         }
         else if (id == IDM_CTX_TERMINATE) {
             if (g_app.contextMenuPid && DoTerminate(g_app.contextMenuPid)) {
-                SetLog(L"[X] Terminated selected process.", Theme::Red);
+                SetLog(L"Ended selected task.", Theme::Red);
                 RefreshProcessData();
             }
         }
@@ -810,9 +816,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             int idx = GetSelectedServiceIndex();
             if (idx >= 0) {
                 if (StartServiceByName(g_app.allServices[idx].name))
-                    SetLog(L"[>] Service start requested.", Theme::Accent);
+                    SetLog(L"Service start requested.", Theme::Accent);
                 else
-                    SetLog(L"[!] Failed to start service.", Theme::Red);
+                    SetLog(L"Failed to start service.", Theme::Red);
                 RefreshServicesList();
             }
         }
@@ -820,9 +826,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             int idx = GetSelectedServiceIndex();
             if (idx >= 0) {
                 if (StopServiceByName(g_app.allServices[idx].name))
-                    SetLog(L"[>] Service stop requested.", Theme::Amber);
+                    SetLog(L"Service stop requested.", Theme::Amber);
                 else
-                    SetLog(L"[!] Failed to stop service.", Theme::Red);
+                    SetLog(L"Failed to stop service.", Theme::Red);
                 RefreshServicesList();
             }
         }
@@ -830,23 +836,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             int idx = GetSelectedServiceIndex();
             if (idx >= 0) {
                 if (RestartServiceByName(g_app.allServices[idx].name))
-                    SetLog(L"[>] Service restarted.", Theme::Cyan);
+                    SetLog(L"Service restarted.", Theme::Cyan);
                 else
-                    SetLog(L"[!] Failed to restart service.", Theme::Red);
+                    SetLog(L"Failed to restart service.", Theme::Red);
                 RefreshServicesList();
             }
         }
         else if (id == IDC_BTN_SVC_REFRESH) {
             RefreshServicesList();
-            SetLog(L"[>] Services list refreshed.", Theme::Accent);
+            SetLog(L"Services list refreshed.", Theme::Accent);
         }
         else if (id == IDC_BTN_STARTUP_ENABLE) {
             int idx = GetSelectedStartupIndex();
             if (idx >= 0) {
                 if (EnableStartupEntry(g_app.allStartupItems[idx]))
-                    SetLog(L"[>] Startup item enabled.", Theme::Accent);
+                    SetLog(L"Startup item enabled.", Theme::Accent);
                 else
-                    SetLog(L"[!] Could not enable item (try running as admin).", Theme::Red);
+                    SetLog(L"Could not enable item (try running as administrator).", Theme::Red);
                 RefreshStartupList();
             }
         }
@@ -854,9 +860,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             int idx = GetSelectedStartupIndex();
             if (idx >= 0) {
                 if (DisableStartupEntry(g_app.allStartupItems[idx]))
-                    SetLog(L"[>] Startup item disabled.", Theme::Amber);
+                    SetLog(L"Startup item disabled.", Theme::Amber);
                 else
-                    SetLog(L"[!] Could not disable item (try running as admin).", Theme::Red);
+                    SetLog(L"Could not disable item (try running as administrator).", Theme::Red);
                 RefreshStartupList();
             }
         }
@@ -866,7 +872,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         }
         else if (id == IDC_BTN_STARTUP_REFRESH) {
             RefreshStartupList();
-            SetLog(L"[>] Startup list refreshed.", Theme::Accent);
+            SetLog(L"Startup list refreshed.", Theme::Accent);
         }
         else if (id == IDM_TRAY_RESTORE) {
             ShowWindow(hwnd, SW_SHOW);
@@ -932,8 +938,8 @@ void EnableHighDpiAwareness() {
     }
 }
 
-void ApplyDarkTitleBar(HWND hwnd) {
-    BOOL dark = TRUE;
+void ApplyLightTitleBar(HWND hwnd) {
+    BOOL dark = FALSE;
     DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark, sizeof(dark));
 }
 
@@ -1047,10 +1053,10 @@ void CreateFontsForDpi(UINT dpi) {
             DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
             CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, face);
     };
-    g_app.fontTitle    = mk(16, FW_BOLD,     L"Segoe UI");
-    g_app.fontSubtitle = mk(9,  FW_SEMIBOLD, L"Segoe UI");
+    g_app.fontTitle    = mk(15, FW_SEMIBOLD, L"Segoe UI");
+    g_app.fontSubtitle = mk(9,  FW_NORMAL,   L"Segoe UI");
     g_app.fontUI       = mk(9,  FW_NORMAL,   L"Segoe UI");
-    g_app.fontUIBold   = mk(9,  FW_BOLD,     L"Segoe UI");
+    g_app.fontUIBold   = mk(9,  FW_SEMIBOLD, L"Segoe UI");
     g_app.fontMono     = mk(9,  FW_NORMAL,   L"Consolas");
 }
 
@@ -1068,7 +1074,7 @@ void ApplyFontsToControls() {
     for (HWND c : ctrls) {
         if (c) SendMessageW(c, WM_SETFONT, reinterpret_cast<WPARAM>(g_app.fontUI), TRUE);
     }
-    if (g_app.hLog) SendMessageW(g_app.hLog, WM_SETFONT, reinterpret_cast<WPARAM>(g_app.fontMono), TRUE);
+    if (g_app.hLog) SendMessageW(g_app.hLog, WM_SETFONT, reinterpret_cast<WPARAM>(g_app.fontUI), TRUE);
 }
 
 // ============================================================================
@@ -1092,7 +1098,7 @@ void CreateControls(HWND hwnd) {
     tie.pszText = const_cast<LPWSTR>(L"System");
     TabCtrl_InsertItem(g_app.hTab, TAB_SYSTEM, &tie);
 
-    g_app.hBtnElevate = CreateWindowExW(0, L"BUTTON", L"ADMIN",
+    g_app.hBtnElevate = CreateWindowExW(0, L"BUTTON", L"Admin",
         WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
         0, 0, 0, 0, hwnd, reinterpret_cast<HMENU>(IDC_BTN_ELEVATE), hInst, nullptr);
 
@@ -1112,7 +1118,7 @@ void CreateControls(HWND hwnd) {
         WS_CHILD | WS_VISIBLE | SS_LEFT,
         0, 0, 0, 0, hwnd, reinterpret_cast<HMENU>(IDC_CPU_LABEL), hInst, nullptr);
 
-    g_app.hLog = CreateWindowExW(0, L"STATIC", L"[SYSTEM] Engine ready.",
+    g_app.hLog = CreateWindowExW(0, L"STATIC", L"Ready.",
         WS_CHILD | WS_VISIBLE | SS_LEFT,
         0, 0, 0, 0, hwnd, reinterpret_cast<HMENU>(IDC_LOG_LABEL), hInst, nullptr);
 
@@ -1128,7 +1134,7 @@ void CreateProcessTabControls(HWND hwnd, HINSTANCE hInst) {
     g_app.hSearch = CreateWindowExW(0, L"EDIT", L"",
         WS_CHILD | ES_AUTOHSCROLL,
         0, 0, 0, 0, hwnd, reinterpret_cast<HMENU>(IDC_SEARCHBOX), hInst, nullptr);
-    SetWindowTheme(g_app.hSearch, L"DarkMode_CFD", nullptr);
+    SetWindowTheme(g_app.hSearch, L"Explorer", nullptr);
     SendMessageW(g_app.hSearch, EM_SETCUEBANNER, TRUE, reinterpret_cast<LPARAM>(L"Search processes..."));
 
     auto mkBtn = [&](const wchar_t* text, int id) {
@@ -1136,15 +1142,15 @@ void CreateProcessTabControls(HWND hwnd, HINSTANCE hInst) {
             0, 0, 0, 0, hwnd, reinterpret_cast<HMENU>(static_cast<INT_PTR>(id)), hInst, nullptr);
     };
 
-    g_app.hBtnSync      = mkBtn(L"SYNC", IDC_BTN_SYNC);
+    g_app.hBtnSync      = mkBtn(L"Sync", IDC_BTN_SYNC);
     g_app.hChkAuto     = CreateWindowExW(0, L"BUTTON", L"Auto",
         WS_CHILD | BS_AUTOCHECKBOX,
         0, 0, 0, 0, hwnd, reinterpret_cast<HMENU>(IDC_CHK_AUTOSYNC), hInst, nullptr);
     Button_SetCheck(g_app.hChkAuto, BST_CHECKED);
 
-    g_app.hBtnSuspend   = mkBtn(L"SUSPEND", IDC_BTN_SUSPEND);
-    g_app.hBtnResume    = mkBtn(L"RESUME", IDC_BTN_RESUME);
-    g_app.hBtnTerminate = mkBtn(L"KILL", IDC_BTN_TERMINATE);
+    g_app.hBtnSuspend   = mkBtn(L"Suspend", IDC_BTN_SUSPEND);
+    g_app.hBtnResume    = mkBtn(L"Resume", IDC_BTN_RESUME);
+    g_app.hBtnTerminate = mkBtn(L"End Task", IDC_BTN_TERMINATE);
 
     g_app.hList = CreateWindowExW(0, WC_LISTVIEWW, L"",
         WS_CHILD | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDATA,
@@ -1154,17 +1160,17 @@ void CreateProcessTabControls(HWND hwnd, HINSTANCE hInst) {
 
     LVCOLUMNW col{};
     col.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-    col.pszText = const_cast<LPWSTR>(L"NAME");
+    col.pszText = const_cast<LPWSTR>(L"Name");
     col.cx = SC(180); col.iSubItem = 0; ListView_InsertColumn(g_app.hList, 0, &col);
     col.pszText = const_cast<LPWSTR>(L"PID");
     col.cx = SC(70);  col.iSubItem = 1; ListView_InsertColumn(g_app.hList, 1, &col);
     col.pszText = const_cast<LPWSTR>(L"CPU %");
     col.cx = SC(80);  col.iSubItem = 2; ListView_InsertColumn(g_app.hList, 2, &col);
-    col.pszText = const_cast<LPWSTR>(L"MEMORY");
+    col.pszText = const_cast<LPWSTR>(L"Memory");
     col.cx = SC(90);  col.iSubItem = 3; ListView_InsertColumn(g_app.hList, 3, &col);
-    col.pszText = const_cast<LPWSTR>(L"PRIORITY");
+    col.pszText = const_cast<LPWSTR>(L"Priority");
     col.cx = SC(100); col.iSubItem = 4; ListView_InsertColumn(g_app.hList, 4, &col);
-    col.pszText = const_cast<LPWSTR>(L"PATH");
+    col.pszText = const_cast<LPWSTR>(L"Path");
     col.cx = SC(300); col.iSubItem = 5; ListView_InsertColumn(g_app.hList, 5, &col);
 }
 
@@ -1174,10 +1180,10 @@ void CreateServicesTabControls(HWND hwnd, HINSTANCE hInst) {
             0, 0, 0, 0, hwnd, reinterpret_cast<HMENU>(static_cast<INT_PTR>(id)), hInst, nullptr);
     };
 
-    g_app.hBtnSvcStart   = mkBtn(L"START", IDC_BTN_SVC_START);
-    g_app.hBtnSvcStop    = mkBtn(L"STOP", IDC_BTN_SVC_STOP);
-    g_app.hBtnSvcRestart = mkBtn(L"RESTART", IDC_BTN_SVC_RESTART);
-    g_app.hBtnSvcRefresh = mkBtn(L"REFRESH", IDC_BTN_SVC_REFRESH);
+    g_app.hBtnSvcStart   = mkBtn(L"Start", IDC_BTN_SVC_START);
+    g_app.hBtnSvcStop    = mkBtn(L"Stop", IDC_BTN_SVC_STOP);
+    g_app.hBtnSvcRestart = mkBtn(L"Restart", IDC_BTN_SVC_RESTART);
+    g_app.hBtnSvcRefresh = mkBtn(L"Refresh", IDC_BTN_SVC_REFRESH);
 
     g_app.hListServices = CreateWindowExW(0, WC_LISTVIEWW, L"",
         WS_CHILD | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS,
@@ -1187,19 +1193,19 @@ void CreateServicesTabControls(HWND hwnd, HINSTANCE hInst) {
 
     LVCOLUMNW col{};
     col.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-    col.pszText = const_cast<LPWSTR>(L"SERVICE NAME");
+    col.pszText = const_cast<LPWSTR>(L"Service Name");
     col.cx = SC(180); col.iSubItem = 0; ListView_InsertColumn(g_app.hListServices, 0, &col);
-    col.pszText = const_cast<LPWSTR>(L"DISPLAY NAME");
+    col.pszText = const_cast<LPWSTR>(L"Display Name");
     col.cx = SC(200); col.iSubItem = 1; ListView_InsertColumn(g_app.hListServices, 1, &col);
-    col.pszText = const_cast<LPWSTR>(L"STATUS");
+    col.pszText = const_cast<LPWSTR>(L"Status");
     col.cx = SC(90);  col.iSubItem = 2; ListView_InsertColumn(g_app.hListServices, 2, &col);
-    col.pszText = const_cast<LPWSTR>(L"START TYPE");
+    col.pszText = const_cast<LPWSTR>(L"Start Type");
     col.cx = SC(100); col.iSubItem = 3; ListView_InsertColumn(g_app.hListServices, 3, &col);
     col.pszText = const_cast<LPWSTR>(L"PID");
     col.cx = SC(60);  col.iSubItem = 4; ListView_InsertColumn(g_app.hListServices, 4, &col);
-    col.pszText = const_cast<LPWSTR>(L"DESCRIPTION");
+    col.pszText = const_cast<LPWSTR>(L"Description");
     col.cx = SC(200); col.iSubItem = 5; ListView_InsertColumn(g_app.hListServices, 5, &col);
-    col.pszText = const_cast<LPWSTR>(L"BINARY PATH");
+    col.pszText = const_cast<LPWSTR>(L"Binary Path");
     col.cx = SC(250); col.iSubItem = 6; ListView_InsertColumn(g_app.hListServices, 6, &col);
 }
 
@@ -1209,10 +1215,10 @@ void CreateStartupTabControls(HWND hwnd, HINSTANCE hInst) {
             0, 0, 0, 0, hwnd, reinterpret_cast<HMENU>(static_cast<INT_PTR>(id)), hInst, nullptr);
     };
 
-    g_app.hBtnStartupEnable  = mkBtn(L"ENABLE", IDC_BTN_STARTUP_ENABLE);
-    g_app.hBtnStartupDisable = mkBtn(L"DISABLE", IDC_BTN_STARTUP_DISABLE);
-    g_app.hBtnStartupOpenLoc = mkBtn(L"LOCATION", IDC_BTN_STARTUP_OPENLOC);
-    g_app.hBtnStartupRefresh = mkBtn(L"REFRESH", IDC_BTN_STARTUP_REFRESH);
+    g_app.hBtnStartupEnable  = mkBtn(L"Enable", IDC_BTN_STARTUP_ENABLE);
+    g_app.hBtnStartupDisable = mkBtn(L"Disable", IDC_BTN_STARTUP_DISABLE);
+    g_app.hBtnStartupOpenLoc = mkBtn(L"Location", IDC_BTN_STARTUP_OPENLOC);
+    g_app.hBtnStartupRefresh = mkBtn(L"Refresh", IDC_BTN_STARTUP_REFRESH);
 
     g_app.hListStartup = CreateWindowExW(0, WC_LISTVIEWW, L"",
         WS_CHILD | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS,
@@ -1222,13 +1228,13 @@ void CreateStartupTabControls(HWND hwnd, HINSTANCE hInst) {
 
     LVCOLUMNW col{};
     col.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-    col.pszText = const_cast<LPWSTR>(L"NAME");
+    col.pszText = const_cast<LPWSTR>(L"Name");
     col.cx = SC(150); col.iSubItem = 0; ListView_InsertColumn(g_app.hListStartup, 0, &col);
-    col.pszText = const_cast<LPWSTR>(L"COMMAND");
+    col.pszText = const_cast<LPWSTR>(L"Command");
     col.cx = SC(350); col.iSubItem = 1; ListView_InsertColumn(g_app.hListStartup, 1, &col);
-    col.pszText = const_cast<LPWSTR>(L"STATUS");
+    col.pszText = const_cast<LPWSTR>(L"Status");
     col.cx = SC(80);  col.iSubItem = 2; ListView_InsertColumn(g_app.hListStartup, 2, &col);
-    col.pszText = const_cast<LPWSTR>(L"SOURCE");
+    col.pszText = const_cast<LPWSTR>(L"Source");
     col.cx = SC(150); col.iSubItem = 3; ListView_InsertColumn(g_app.hListStartup, 3, &col);
 }
 
@@ -1241,9 +1247,9 @@ void CreateSystemTabControls(HWND hwnd, HINSTANCE hInst) {
 
     LVCOLUMNW col{};
     col.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-    col.pszText = const_cast<LPWSTR>(L"INFORMATION");
+    col.pszText = const_cast<LPWSTR>(L"Information");
     col.cx = SC(300); col.iSubItem = 0; ListView_InsertColumn(g_app.hListSysInfo, 0, &col);
-    col.pszText = const_cast<LPWSTR>(L"VALUE");
+    col.pszText = const_cast<LPWSTR>(L"Value");
     col.cx = SC(500); col.iSubItem = 1; ListView_InsertColumn(g_app.hListSysInfo, 1, &col);
 }
 
@@ -1358,7 +1364,7 @@ void RelayoutControls() {
         MakeButtonRounded(g_app.hBtnResume, actW, toolbarH);
         cx += actW + SC(6);
 
-        int killW = SC(70);
+        int killW = SC(80);
         MoveWindow(g_app.hBtnTerminate, cx, y, killW, toolbarH, TRUE);
         MakeButtonRounded(g_app.hBtnTerminate, killW, toolbarH);
     }
@@ -1497,7 +1503,7 @@ void DrawFrame(HDC hdc, RECT r, COLORREF color) {
 }
 
 void MakeButtonRounded(HWND hBtn, int w, int h) {
-    HRGN hRgn = CreateRoundRectRgn(0, 0, w + 1, h + 1, SC(6), SC(6));
+    HRGN hRgn = CreateRoundRectRgn(0, 0, w + 1, h + 1, SC(4), SC(4));
     SetWindowRgn(hBtn, hRgn, TRUE);
 }
 
@@ -1513,32 +1519,45 @@ LRESULT HandleDrawItem(LPARAM lParam) {
     UINT id = dis->CtlID;
     bool pressed = (dis->itemState & ODS_SELECTED) != 0;
 
-    COLORREF bg = Theme::BgControl;
+    // Default: neutral outlined button (Windows 11 "standard" button style)
+    COLORREF bg = pressed ? Theme::ButtonFacePressed : Theme::ButtonFace;
     COLORREF fg = Theme::TextPrimary;
+    COLORREF border = Theme::Border;
+    bool filled = true;
 
     if (id == IDC_BTN_ELEVATE) {
-        bg = g_app.isElevated ? Theme::AccentDim : Theme::Amber;
-        fg = RGB(0, 0, 0);
+        bg = g_app.isElevated ? Theme::Success : Theme::Amber;
+        if (pressed) bg = g_app.isElevated ? RGB(0x0C, 0x5E, 0x31) : Theme::AmberDim;
+        fg = g_app.isElevated ? RGB(0xFF, 0xFF, 0xFF) : RGB(0x1A, 0x1A, 0x1A);
+        border = bg;
     } else if (id == IDC_BTN_TERMINATE || id == IDC_BTN_SVC_STOP || id == IDC_BTN_STARTUP_DISABLE) {
-        bg = pressed ? RGB(0xA0, 0x30, 0x30) : Theme::Red;
+        bg = pressed ? Theme::RedDim : Theme::Red;
         fg = RGB(0xFF, 0xFF, 0xFF);
+        border = bg;
     } else if (id == IDC_BTN_SUSPEND) {
-        bg = pressed ? RGB(0x90, 0x60, 0x20) : Theme::Amber;
-        fg = RGB(0x00, 0x00, 0x00);
+        bg = pressed ? Theme::AmberDim : Theme::Amber;
+        fg = RGB(0x1A, 0x1A, 0x1A);
+        border = bg;
     } else if (id == IDC_BTN_RESUME || id == IDC_BTN_SVC_RESTART) {
-        bg = pressed ? RGB(0x20, 0x70, 0x90) : Theme::Cyan;
-        fg = RGB(0x00, 0x00, 0x00);
-    } else if (id == IDC_BTN_SYNC || id == IDC_BTN_SVC_START || id == IDC_BTN_STARTUP_ENABLE ||
-               id == IDC_BTN_SVC_REFRESH || id == IDC_BTN_STARTUP_REFRESH) {
+        bg = pressed ? Theme::CyanDim : Theme::Cyan;
+        fg = RGB(0xFF, 0xFF, 0xFF);
+        border = bg;
+    } else if (id == IDC_BTN_SYNC || id == IDC_BTN_SVC_START || id == IDC_BTN_STARTUP_ENABLE) {
         bg = pressed ? Theme::AccentDim : Theme::Accent;
-        fg = RGB(0x00, 0x00, 0x00);
+        fg = RGB(0xFF, 0xFF, 0xFF);
+        border = bg;
     } else {
-        if (pressed) bg = Theme::BgListSel;
+        // Neutral secondary actions: Refresh, Location, etc. — flat outlined style
+        filled = true;
     }
 
     HBRUSH hbr = CreateSolidBrush(bg);
     FillRect(hdc, &r, hbr);
     DeleteObject(hbr);
+
+    if (!filled || border == Theme::Border) {
+        DrawFrame(hdc, r, Theme::Border);
+    }
 
     wchar_t text[128];
     GetWindowTextW(dis->hwndItem, text, 128);
@@ -1741,21 +1760,21 @@ bool DoTerminate(DWORD pid) {
 void ApplyPriority(DWORD pid, DWORD priorityClass) {
     ScopedHandle h(OpenProcess(PROCESS_SET_INFORMATION, FALSE, pid));
     if (!h.valid()) {
-        SetLog(L"[!] Access denied setting priority.", Theme::Red);
+        SetLog(L"Access denied setting priority.", Theme::Red);
         return;
     }
     if (SetPriorityClass(h.get(), priorityClass)) {
-        SetLog(L"[>] Priority changed successfully.", Theme::Accent);
+        SetLog(L"Priority changed successfully.", Theme::Accent);
         RefreshProcessData();
     } else {
-        SetLog(L"[!] Failed to set priority.", Theme::Red);
+        SetLog(L"Failed to set priority.", Theme::Red);
     }
 }
 
 void ToggleAffinityBit(DWORD pid, int coreIndex) {
     ScopedHandle h(OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_SET_INFORMATION, FALSE, pid));
     if (!h.valid()) {
-        SetLog(L"[!] Access denied setting CPU affinity.", Theme::Red);
+        SetLog(L"Access denied setting CPU affinity.", Theme::Red);
         return;
     }
     DWORD_PTR processMask = 0, systemMask = 0;
@@ -1765,11 +1784,11 @@ void ToggleAffinityBit(DWORD pid, int coreIndex) {
         else                   processMask |= bit;
 
         if (processMask == 0) {
-            SetLog(L"[!] Process must have affinity with at least one core.", Theme::Amber);
+            SetLog(L"Process must have affinity with at least one core.", Theme::Amber);
         } else if (SetProcessAffinityMask(h.get(), processMask)) {
-            SetLog(L"[>] CPU affinity updated.", Theme::Accent);
+            SetLog(L"CPU affinity updated.", Theme::Accent);
         } else {
-            SetLog(L"[!] Failed to set CPU affinity.", Theme::Red);
+            SetLog(L"Failed to set CPU affinity.", Theme::Red);
         }
     }
 }
@@ -1780,7 +1799,7 @@ void ShowProcessContextMenu(HWND owner, POINT screenPt, DWORD pid) {
 
     AppendMenuW(hMenu, MF_STRING, IDM_CTX_SUSPEND, L"Suspend Process");
     AppendMenuW(hMenu, MF_STRING, IDM_CTX_RESUME, L"Resume Process");
-    AppendMenuW(hMenu, MF_STRING, IDM_CTX_TERMINATE, L"Kill Process");
+    AppendMenuW(hMenu, MF_STRING, IDM_CTX_TERMINATE, L"End Task");
     AppendMenuW(hMenu, MF_SEPARATOR, 0, nullptr);
 
     DWORD currentPriority = NORMAL_PRIORITY_CLASS;
